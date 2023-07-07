@@ -17,17 +17,16 @@ namespace mergiterog
         string parola;
         string encriptat;
 
-        // This constant is used to determine the keysize of the encryption algorithm in bits.
+        //Constanta asta determina keysize ul algoritmului de criptare in biti
         // We divide this by 8 within the code below to get the equivalent number of bytes.
         private const int Keysize = 256;
 
-        // This constant determines the number of iterations for the password bytes generation function.
+        //Constanta asta determina numarul de iteratii al functiei ce genereaza password ul
         private const int DerivationIterations = 1000;
 
         public static string Encrypt(string plainText, string passPhrase)
         {
-            // Salt and IV is randomly generated each time, but is preprended to encrypted cipher text
-            // so that the same Salt and IV values can be used when decrypting.  
+           // Salt ul si IV sunt generate random de fiecare data  
             var saltStringBytes = Generate256BitsOfRandomEntropy();
             var ivStringBytes = Generate256BitsOfRandomEntropy();
             var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
@@ -47,7 +46,7 @@ namespace mergiterog
                             {
                                 cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
                                 cryptoStream.FlushFinalBlock();
-                                // Create the final bytes as a concatenation of the random salt bytes, the random iv bytes and the cipher bytes.
+                                // A creat bitii finali ca o concatenare de random salt bites, random IV bites si cipher bites Create the final bytes 
                                 var cipherTextBytes = saltStringBytes;
                                 cipherTextBytes = cipherTextBytes.Concat(ivStringBytes).ToArray();
                                 cipherTextBytes = cipherTextBytes.Concat(memoryStream.ToArray()).ToArray();
@@ -63,14 +62,14 @@ namespace mergiterog
 
         public static string Decrypt(string cipherText, string passPhrase)
         {
-            // Get the complete stream of bytes that represent:
+             // Ia stream ul complet de bytes care reprezinta: 
             // [32 bytes of Salt] + [32 bytes of IV] + [n bytes of CipherText]
             var cipherTextBytesWithSaltAndIv = Convert.FromBase64String(cipherText);
-            // Get the saltbytes by extracting the first 32 bytes from the supplied cipherText bytes.
+            // Ia bytes de salt luand primii 32 bytes din cipherText bytes pusi la dispozitie
             var saltStringBytes = cipherTextBytesWithSaltAndIv.Take(Keysize / 8).ToArray();
-            // Get the IV bytes by extracting the next 32 bytes from the supplied cipherText bytes.
+           // Ia bytes IV luand primii 32 bytes din cipherText bytes pusi la dispozitie
             var ivStringBytes = cipherTextBytesWithSaltAndIv.Skip(Keysize / 8).Take(Keysize / 8).ToArray();
-            // Get the actual cipher text bytes by removing the first 64 bytes from the cipherText string.
+            // Ia cipher text bytes stergand primii 64 biti din string ul cipherText
             var cipherTextBytes = cipherTextBytesWithSaltAndIv.Skip((Keysize / 8) * 2).Take(cipherTextBytesWithSaltAndIv.Length - ((Keysize / 8) * 2)).ToArray();
 
             using (var password = new Rfc2898DeriveBytes(passPhrase, saltStringBytes, DerivationIterations))
@@ -98,10 +97,10 @@ namespace mergiterog
 
         private static byte[] Generate256BitsOfRandomEntropy()
         {
-            var randomBytes = new byte[32]; // 32 Bytes will give us 256 bits.
+            var randomBytes = new byte[32]; // 32 Bytes ne vor da 256 bits.
             using (var rngCsp = new RNGCryptoServiceProvider())
             {
-                // Fill the array with cryptographically secure random bytes.
+               // Umple array ul cu cryptographically secure bytes random
                 rngCsp.GetBytes(randomBytes);
             }
             return randomBytes;
